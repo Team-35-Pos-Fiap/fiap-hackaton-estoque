@@ -1,5 +1,6 @@
 package br.com.fiap.estoque_service.services;
 
+import br.com.fiap.estoque_service.clients.EstabelecimentoSaudeServiceClient;
 import br.com.fiap.estoque_service.clients.MovimentacaoServiceClient;
 import br.com.fiap.estoque_service.clients.record.request.MovimentacaoRequest;
 import br.com.fiap.estoque_service.entities.domain.EstoqueItemDomain;
@@ -16,6 +17,7 @@ import br.com.fiap.estoque_service.exceptions.TransferenciaInvalidaException;
 import br.com.fiap.estoque_service.mappers.EstoqueItemMapper;
 import br.com.fiap.estoque_service.repositories.interfaces.IEstoqueRepository;
 import br.com.fiap.estoque_service.services.interfaces.IEstoqueService;
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -27,10 +29,12 @@ public class EstoqueService implements IEstoqueService {
 
     private final IEstoqueRepository estoqueRepository;
     private final MovimentacaoServiceClient movimentacaoClient;
+    private final EstabelecimentoSaudeServiceClient estabelecimentoSaudeClient;
 
-    public EstoqueService(IEstoqueRepository estoqueRepository, MovimentacaoServiceClient movimentacaoClient) {
+    public EstoqueService(IEstoqueRepository estoqueRepository, MovimentacaoServiceClient movimentacaoClient, EstabelecimentoSaudeServiceClient estabelecimentoSaudeClient) {
         this.estoqueRepository = estoqueRepository;
         this.movimentacaoClient = movimentacaoClient;
+        this.estabelecimentoSaudeClient = estabelecimentoSaudeClient;
     }
 
     @Override
@@ -103,6 +107,9 @@ public class EstoqueService implements IEstoqueService {
      * @throws InsumoJaCadastradoNaUnidadeException se o insumo já existe na unidade
      */
     private InsumoRecordResponse criarItemEstoque(UUID idUnidade, UUID idInsumo, int quantidade) {
+        validarSeUnidadeExiste(idUnidade);
+        validarSeInsumoExiste(idInsumo);
+
         if (estoqueRepository.insumoJaCadastradoNaUnidade(idUnidade, idInsumo)) {
             throw new InsumoJaCadastradoNaUnidadeException("Insumo já cadastrado na unidade");
         }
@@ -212,5 +219,29 @@ public class EstoqueService implements IEstoqueService {
      */
     private void registrarMovimentacao(TipoDeMovimentacao tipo, UUID idInsumo, UUID origem, UUID destino, int quantidade) {
         movimentacaoClient.registrar(new MovimentacaoRequest(tipo.name(), idInsumo, origem, destino, quantidade));
+    }
+
+    /**
+     * Verifica se id da unidade está registrado/valido no serviço de estabelecimento de saúde via Feign
+     *
+     * @param idUnidade ID da unidade a ser verificado
+     */
+    private void validarSeUnidadeExiste(UUID idUnidade){
+        try {
+            estabelecimentoSaudeClient.buscarEstabelecimentoPorId(idUnidade);
+        } catch (FeignException.NotFound e) {
+            throw new IllegalArgumentException("Unidade não encontrada no serviço de estabelecimento de saúde: " + idUnidade);
+        } catch (FeignException e) {
+            throw new RuntimeException("Erro ao consultar serviço de estabelecimento de saúde: " + e.status(), e);
+        }
+    }
+
+    /**
+     * Verifica se id do insumo está registrado/valido no serviço de estabelecimento de insumos via Feign
+     *
+     * @param idInsumo ID do insumo a ser verificado
+     */
+    private void validarSeInsumoExiste(UUID idInsumo){
+        // PRECISA SER IMPLEMENTADO
     }
 }
