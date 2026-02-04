@@ -3,8 +3,7 @@ package br.com.fiap.estoque_service.repositories;
 import br.com.fiap.estoque_service.entities.model.EstoqueItemModel;
 import br.com.fiap.estoque_service.exceptions.InsumoNaoCadastradoNaUnidadeException;
 import br.com.fiap.estoque_service.exceptions.PaginaInvalidaException;
-import br.com.fiap.estoque_service.repositories.interfaces.IEstoqueRepository;
-import br.com.fiap.estoque_service.repositories.interfaces.jpa.IEstoqueJpaRepository;
+import br.com.fiap.estoque_service.repositories.interfaces.jpa.EstoqueJpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
@@ -13,12 +12,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class EstoqueRepository implements IEstoqueRepository {
+public class EstoqueRepositoryImpl implements br.com.fiap.estoque_service.repositories.interfaces.EstoqueRepository {
 
-    private final IEstoqueJpaRepository estoqueRepository;
+    private final EstoqueJpaRepository estoqueRepository;
     private static final int QUANTIDADE_REGISTROS = 5;
 
-    public EstoqueRepository(IEstoqueJpaRepository estoqueRepository) {
+    public EstoqueRepositoryImpl(EstoqueJpaRepository estoqueRepository) {
         this.estoqueRepository = estoqueRepository;
     }
 

@@ -1,4 +1,4 @@
-package br.com.fiap.estoque_service.clients.record.request;
+package br.com.fiap.estoque_service.clients.dto.request;
 
 import java.util.UUID;
 

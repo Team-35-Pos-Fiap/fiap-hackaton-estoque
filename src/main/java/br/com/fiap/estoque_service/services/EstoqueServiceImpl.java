@@ -2,21 +2,20 @@ package br.com.fiap.estoque_service.services;
 
 import br.com.fiap.estoque_service.clients.EstabelecimentoSaudeServiceClient;
 import br.com.fiap.estoque_service.clients.MovimentacaoServiceClient;
-import br.com.fiap.estoque_service.clients.record.request.MovimentacaoRequest;
+import br.com.fiap.estoque_service.clients.dto.request.MovimentacaoRequest;
 import br.com.fiap.estoque_service.entities.domain.EstoqueItemDomain;
 import br.com.fiap.estoque_service.entities.enums.TipoDeMovimentacao;
 import br.com.fiap.estoque_service.entities.model.EstoqueItemModel;
-import br.com.fiap.estoque_service.entities.record.request.InsumoRecordRequest;
-import br.com.fiap.estoque_service.entities.record.request.MovimentacaoInsumoRecordRequest;
-import br.com.fiap.estoque_service.entities.record.response.InsumoRecordPaginacaoResponse;
-import br.com.fiap.estoque_service.entities.record.response.InsumoRecordResponse;
+import br.com.fiap.estoque_service.dto.request.InsumoRequestDto;
+import br.com.fiap.estoque_service.dto.request.MovimentacaoRequestDto;
+import br.com.fiap.estoque_service.dto.response.InsumoPaginacaoResponseDto;
+import br.com.fiap.estoque_service.dto.response.InsumoResponseDto;
 import br.com.fiap.estoque_service.exceptions.InsumoComQuantidadeMaiorDoQueZeroException;
 import br.com.fiap.estoque_service.exceptions.InsumoJaCadastradoNaUnidadeException;
 import br.com.fiap.estoque_service.exceptions.InsumoNaoCadastradoNaUnidadeException;
 import br.com.fiap.estoque_service.exceptions.TransferenciaInvalidaException;
 import br.com.fiap.estoque_service.mappers.EstoqueItemMapper;
-import br.com.fiap.estoque_service.repositories.interfaces.IEstoqueRepository;
-import br.com.fiap.estoque_service.services.interfaces.IEstoqueService;
+import br.com.fiap.estoque_service.repositories.interfaces.EstoqueRepository;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -25,13 +24,13 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
-public class EstoqueService implements IEstoqueService {
+public class EstoqueServiceImpl implements br.com.fiap.estoque_service.services.interfaces.EstoqueService {
 
-    private final IEstoqueRepository estoqueRepository;
+    private final EstoqueRepository estoqueRepository;
     private final MovimentacaoServiceClient movimentacaoClient;
     private final EstabelecimentoSaudeServiceClient estabelecimentoSaudeClient;
 
-    public EstoqueService(IEstoqueRepository estoqueRepository, MovimentacaoServiceClient movimentacaoClient, EstabelecimentoSaudeServiceClient estabelecimentoSaudeClient) {
+    public EstoqueServiceImpl(EstoqueRepository estoqueRepository, MovimentacaoServiceClient movimentacaoClient, EstabelecimentoSaudeServiceClient estabelecimentoSaudeClient) {
         this.estoqueRepository = estoqueRepository;
         this.movimentacaoClient = movimentacaoClient;
         this.estabelecimentoSaudeClient = estabelecimentoSaudeClient;
@@ -39,7 +38,7 @@ public class EstoqueService implements IEstoqueService {
 
     @Override
     @Transactional
-    public InsumoRecordResponse registrarInsumo(UUID idUnidade, InsumoRecordRequest request) {
+    public InsumoResponseDto registrarInsumo(UUID idUnidade, InsumoRequestDto request) {
         return criarItemEstoque(
             idUnidade,
             request.idInsumo(),
@@ -62,10 +61,10 @@ public class EstoqueService implements IEstoqueService {
 
     @Override
     @Transactional
-    public InsumoRecordResponse movimentarInsumo(
+    public InsumoResponseDto movimentarInsumo(
         UUID idUnidadeOrigem,
         UUID idInsumo,
-        MovimentacaoInsumoRecordRequest request
+        MovimentacaoRequestDto request
     ) {
         validarTransferencia(request);
 
@@ -83,14 +82,14 @@ public class EstoqueService implements IEstoqueService {
     }
 
     @Override
-    public InsumoRecordResponse buscarInsumoPorId(UUID idUnidade, UUID idInsumo) {
+    public InsumoResponseDto buscarInsumoPorId(UUID idUnidade, UUID idInsumo) {
         EstoqueItemDomain domain = buscarDomain(idUnidade, idInsumo);
 
         return EstoqueItemMapper.fromDomainToResponse(domain);
     }
 
     @Override
-    public InsumoRecordPaginacaoResponse buscarTodosInsumos(UUID idUnidade, int pagina) {
+    public InsumoPaginacaoResponseDto buscarTodosInsumos(UUID idUnidade, int pagina) {
         Page<EstoqueItemModel> insumos = estoqueRepository.buscarInsumosPorUnidadePaginado(idUnidade, pagina);
 
         return EstoqueItemMapper.fromModelToResponsePaginated(insumos);
@@ -106,7 +105,7 @@ public class EstoqueService implements IEstoqueService {
      * @return InsumoRecordResponse criado
      * @throws InsumoJaCadastradoNaUnidadeException se o insumo já existe na unidade
      */
-    private InsumoRecordResponse criarItemEstoque(UUID idUnidade, UUID idInsumo, int quantidade) {
+    private InsumoResponseDto criarItemEstoque(UUID idUnidade, UUID idInsumo, int quantidade) {
         validarSeUnidadeExiste(idUnidade);
         validarSeInsumoExiste(idInsumo);
 
@@ -125,7 +124,7 @@ public class EstoqueService implements IEstoqueService {
      * Se o insumo não existir, cria novo item.
      * Caso contrário, incrementa estoque existente e registra movimentação.
      */
-    private InsumoRecordResponse entradaDeInsumo(UUID idUnidade, UUID idInsumo, int quantidade) {
+    private InsumoResponseDto entradaDeInsumo(UUID idUnidade, UUID idInsumo, int quantidade) {
         if (!estoqueRepository.insumoJaCadastradoNaUnidade(idUnidade, idInsumo)) {
             return criarItemEstoque(idUnidade, idInsumo, quantidade);
         }
@@ -141,7 +140,7 @@ public class EstoqueService implements IEstoqueService {
      * Realiza uma saída de insumo.
      * Reduz estoque existente e registra movimentação como SAIDA.
      */
-    private InsumoRecordResponse saidaDeInsumo(UUID idUnidade, UUID idInsumo, int quantidade) {
+    private InsumoResponseDto saidaDeInsumo(UUID idUnidade, UUID idInsumo, int quantidade) {
         EstoqueItemDomain domain = buscarDomain(idUnidade, idInsumo);
         domain.saidaDeEstoque(quantidade);
         registrarMovimentacao(TipoDeMovimentacao.SAIDA, idInsumo, idUnidade, null, quantidade);
@@ -153,7 +152,7 @@ public class EstoqueService implements IEstoqueService {
      * Realiza perda de insumo.
      * Reduz estoque existente e registra movimentação como PERDA.
      */
-    private InsumoRecordResponse perdaDeInsumo(UUID idUnidade, UUID idInsumo, int quantidade) {
+    private InsumoResponseDto perdaDeInsumo(UUID idUnidade, UUID idInsumo, int quantidade) {
         EstoqueItemDomain domain = buscarDomain(idUnidade, idInsumo);
         domain.saidaDeEstoque(quantidade);
         registrarMovimentacao(TipoDeMovimentacao.PERDA, idInsumo, idUnidade, null, quantidade);
@@ -166,7 +165,7 @@ public class EstoqueService implements IEstoqueService {
      * Executa saída na unidade de origem e entrada na unidade destino.
      * Registra movimentação como TRANSFERENCIA.
      */
-    private InsumoRecordResponse transferenciaDeInsumo(UUID idUnidadeOrigem, UUID idInsumo, int quantidade, UUID idUnidadeDestino) {
+    private InsumoResponseDto transferenciaDeInsumo(UUID idUnidadeOrigem, UUID idInsumo, int quantidade, UUID idUnidadeDestino) {
         // saída da origem
         EstoqueItemDomain origemDomain = buscarDomain(idUnidadeOrigem, idInsumo);
         origemDomain.saidaDeEstoque(quantidade);
@@ -202,7 +201,7 @@ public class EstoqueService implements IEstoqueService {
     }
 
     /** Valida dados da transferência, exigindo unidade destino */
-    private void validarTransferencia(MovimentacaoInsumoRecordRequest request) {
+    private void validarTransferencia(MovimentacaoRequestDto request) {
         if (request.tipo() == TipoDeMovimentacao.TRANSFERENCIA && request.idUnidadeDestino() == null) {
             throw new TransferenciaInvalidaException("idUnidadeDestino é obrigatório para TRANSFERENCIA");
         }

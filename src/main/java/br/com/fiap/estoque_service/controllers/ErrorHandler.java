@@ -1,6 +1,6 @@
 package br.com.fiap.estoque_service.controllers;
 
-import br.com.fiap.estoque_service.entities.record.response.ErrorResponse;
+import br.com.fiap.estoque_service.dto.response.ErrorResponse;
 import br.com.fiap.estoque_service.exceptions.*;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;

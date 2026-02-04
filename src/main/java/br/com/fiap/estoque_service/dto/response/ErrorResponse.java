@@ -1,4 +1,4 @@
-package br.com.fiap.estoque_service.entities.record.response;
+package br.com.fiap.estoque_service.dto.response;
 
 public record ErrorResponse(
     int status,
