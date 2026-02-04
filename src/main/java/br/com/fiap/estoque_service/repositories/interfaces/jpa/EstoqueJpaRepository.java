@@ -12,4 +12,5 @@ public interface EstoqueJpaRepository extends JpaRepository<EstoqueItemModel, UU
     boolean existsByIdUnidadeAndIdInsumo(UUID idUnidade, UUID idInsumo);
     Optional<EstoqueItemModel> findByIdUnidadeAndIdInsumo(UUID idUnidade, UUID idInsumo);
     Page<EstoqueItemModel> findAllByIdUnidade(UUID idUnidade, Pageable pageable);
+    Page<EstoqueItemModel> findAllByIdInsumo(UUID idInsumo, Pageable pageable);
 }

@@ -11,6 +11,7 @@ public interface EstoqueService {
     InsumoResponseDto registrarInsumo(UUID idUnidade, InsumoRequestDto dadosIniciaisInsumo);
     void deletarInsumo(UUID idUnidade, UUID idInsumo);
     InsumoResponseDto movimentarInsumo(UUID idUnidade, UUID idInsumo, MovimentacaoRequestDto dadosMovimentacaoInsumo);
-    InsumoResponseDto buscarInsumoPorId(UUID idUnidade, UUID idInsumo);
-    InsumoPaginacaoResponseDto buscarTodosInsumos (UUID idUnidade, int pagina);
+    InsumoResponseDto buscarPorUnidadeEInsumo(UUID idUnidade, UUID idInsumo);
+    InsumoPaginacaoResponseDto buscarTodosPorUnidade(UUID idUnidade, int pagina);
+    InsumoPaginacaoResponseDto buscarTodosPorInsumo(UUID idInsumo, int pagina);
 }

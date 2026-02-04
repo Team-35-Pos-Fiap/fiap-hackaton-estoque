@@ -8,7 +8,8 @@ import java.util.UUID;
 public interface EstoqueRepository {
     boolean insumoJaCadastradoNaUnidade(UUID idUnidade, UUID idInsumo);
     void salvar(EstoqueItemModel estoqueItemModel);
-    EstoqueItemModel buscarPorIdUnidadeEIdInsumo(UUID idUnidade, UUID idInsumo);
+    EstoqueItemModel buscarPorUnidadeEInsumo(UUID idUnidade, UUID idInsumo);
     void deletar(EstoqueItemModel estoqueItemModel);
-    Page<EstoqueItemModel> buscarInsumosPorUnidadePaginado(UUID idUnidade, Integer pagina);
+    Page<EstoqueItemModel> buscarPorUnidadePaginado(UUID idUnidade, Integer pagina);
+    Page<EstoqueItemModel> buscarPorInsumoPaginado(UUID idInsumo, Integer pagina);
 }

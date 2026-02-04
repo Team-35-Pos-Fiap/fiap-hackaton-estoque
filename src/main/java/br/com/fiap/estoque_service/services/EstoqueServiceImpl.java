@@ -82,15 +82,22 @@ public class EstoqueServiceImpl implements br.com.fiap.estoque_service.services.
     }
 
     @Override
-    public InsumoResponseDto buscarInsumoPorId(UUID idUnidade, UUID idInsumo) {
+    public InsumoResponseDto buscarPorUnidadeEInsumo(UUID idUnidade, UUID idInsumo) {
         EstoqueItemDomain domain = buscarDomain(idUnidade, idInsumo);
 
         return EstoqueItemMapper.fromDomainToResponse(domain);
     }
 
     @Override
-    public InsumoPaginacaoResponseDto buscarTodosInsumos(UUID idUnidade, int pagina) {
-        Page<EstoqueItemModel> insumos = estoqueRepository.buscarInsumosPorUnidadePaginado(idUnidade, pagina);
+    public InsumoPaginacaoResponseDto buscarTodosPorUnidade(UUID idUnidade, int pagina) {
+        Page<EstoqueItemModel> insumos = estoqueRepository.buscarPorUnidadePaginado(idUnidade, pagina);
+
+        return EstoqueItemMapper.fromModelToResponsePaginated(insumos);
+    }
+
+    @Override
+    public InsumoPaginacaoResponseDto buscarTodosPorInsumo(UUID idInsumo, int pagina) {
+        Page<EstoqueItemModel> insumos = estoqueRepository.buscarPorInsumoPaginado(idInsumo, pagina);
 
         return EstoqueItemMapper.fromModelToResponsePaginated(insumos);
     }
@@ -197,7 +204,7 @@ public class EstoqueServiceImpl implements br.com.fiap.estoque_service.services.
         if (!estoqueRepository.insumoJaCadastradoNaUnidade(idUnidade, idInsumo)) {
             throw new InsumoNaoCadastradoNaUnidadeException("Insumo não cadastrado na unidade");
         }
-        return estoqueRepository.buscarPorIdUnidadeEIdInsumo(idUnidade, idInsumo);
+        return estoqueRepository.buscarPorUnidadeEInsumo(idUnidade, idInsumo);
     }
 
     /** Valida dados da transferência, exigindo unidade destino */
