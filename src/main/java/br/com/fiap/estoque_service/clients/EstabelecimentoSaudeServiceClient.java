@@ -11,7 +11,7 @@ import java.util.UUID;
     url = "${services.estabelecimento-saude:}"
 )
 public interface EstabelecimentoSaudeServiceClient{
-    @GetMapping("/estabelecimentos/{idEstabelecimento}")
+    @GetMapping("/estabelecimento-saude/estabelecimentos/{idEstabelecimento}")
     void buscarEstabelecimentoPorId(@PathVariable UUID idEstabelecimento);
 
 }

@@ -53,7 +53,7 @@ public class EstoqueController {
         return ResponseEntity.ok().body(estoqueService.buscarPorUnidadeEInsumo(idUnidade, idInsumo));
     }
 
-    @GetMapping("/{idUnidade}/insumos")
+    @GetMapping("/{idUnidade}")
     public ResponseEntity<InsumoPaginacaoResponseDto> listarPorUnidade(@PathVariable UUID idUnidade, @RequestParam(defaultValue = "1") final Integer pagina){
         log.info("listarPorUnidade(): id da unidade {} e página {}", idUnidade, pagina);
 
