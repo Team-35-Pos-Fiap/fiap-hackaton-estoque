@@ -1,6 +1,7 @@
 package br.com.fiap.estoque_service.services;
 
 import br.com.fiap.estoque_service.clients.EstabelecimentoSaudeServiceClient;
+import br.com.fiap.estoque_service.clients.InsumosServiceClient;
 import br.com.fiap.estoque_service.clients.MovimentacaoServiceClient;
 import br.com.fiap.estoque_service.clients.dto.request.MovimentacaoRequest;
 import br.com.fiap.estoque_service.entities.domain.EstoqueItemDomain;
@@ -29,11 +30,13 @@ public class EstoqueServiceImpl implements br.com.fiap.estoque_service.services.
     private final EstoqueRepository estoqueRepository;
     private final MovimentacaoServiceClient movimentacaoClient;
     private final EstabelecimentoSaudeServiceClient estabelecimentoSaudeClient;
+    private final InsumosServiceClient insumosClient;
 
-    public EstoqueServiceImpl(EstoqueRepository estoqueRepository, MovimentacaoServiceClient movimentacaoClient, EstabelecimentoSaudeServiceClient estabelecimentoSaudeClient) {
+    public EstoqueServiceImpl(EstoqueRepository estoqueRepository, MovimentacaoServiceClient movimentacaoClient, EstabelecimentoSaudeServiceClient estabelecimentoSaudeClient, InsumosServiceClient insumosClient) {
         this.estoqueRepository = estoqueRepository;
         this.movimentacaoClient = movimentacaoClient;
         this.estabelecimentoSaudeClient = estabelecimentoSaudeClient;
+        this.insumosClient = insumosClient;
     }
 
     @Override
@@ -248,6 +251,12 @@ public class EstoqueServiceImpl implements br.com.fiap.estoque_service.services.
      * @param idInsumo ID do insumo a ser verificado
      */
     private void validarSeInsumoExiste(UUID idInsumo){
-        // PRECISA SER IMPLEMENTADO
+        try {
+            insumosClient.buscarInsumoPorId(idInsumo);
+        } catch (FeignException.NotFound e) {
+            throw new IllegalArgumentException("Insumo não encontrada no serviço de insumos: " + idInsumo);
+        } catch (FeignException e) {
+            throw new RuntimeException("Erro ao consultar serviço de insumos: " + e.status(), e);
+        }
     }
 }
