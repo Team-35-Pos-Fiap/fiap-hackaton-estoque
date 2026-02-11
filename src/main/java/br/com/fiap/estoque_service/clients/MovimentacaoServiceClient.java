@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
     name = "movimentacao-service",
-    url = "${services.movimentacao:}",
     configuration = FeignConfig.class
 )
 public interface MovimentacaoServiceClient {
